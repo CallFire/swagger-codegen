@@ -1,19 +1,33 @@
 package io.swagger.codegen.languages;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import io.swagger.codegen.*;
+
+import io.swagger.codegen.CliOption;
+import io.swagger.codegen.CodegenConstants;
+import io.swagger.codegen.CodegenModel;
+import io.swagger.codegen.CodegenOperation;
+import io.swagger.codegen.CodegenParameter;
+import io.swagger.codegen.CodegenProperty;
+import io.swagger.codegen.CodegenResponse;
+import io.swagger.codegen.CodegenSecurity;
+import io.swagger.codegen.CodegenType;
+import io.swagger.codegen.SupportingFile;
 import io.swagger.codegen.languages.features.BeanValidationFeatures;
 import io.swagger.codegen.languages.features.OptionalFeatures;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-import java.util.regex.Matcher;
 
 
 public class SpringCodegen extends AbstractJavaCodegen
@@ -206,67 +220,73 @@ public class SpringCodegen extends AbstractJavaCodegen
             writePropertyBack(USE_OPTIONAL, useOptional);
         }
 
-        if (this.interfaceOnly && this.delegatePattern) {
-            if (this.java8) {
-                this.delegateMethod = true;
-                additionalProperties.put("delegate-method", true);
-            } else {
-                throw new IllegalArgumentException(
-                        String.format("Can not generate code with `%s` and `%s` true while `%s` is false.",
-                                DELEGATE_PATTERN, INTERFACE_ONLY, JAVA_8));
-            }
-        }
+//        if (this.interfaceOnly && this.delegatePattern) {
+//            if (this.java8) {
+//                this.delegateMethod = true;
+//                additionalProperties.put("delegate-method", true);
+//            } else {
+//                throw new IllegalArgumentException(
+//                        String.format("Can not generate code with `%s` and `%s` true while `%s` is false.",
+//                                DELEGATE_PATTERN, INTERFACE_ONLY, JAVA_8));
+//            }
+//        }
 
-        supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
-        supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
+//        supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
+//        supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
 
         if (!this.interfaceOnly) {
 
-            if (library.equals(DEFAULT_LIBRARY)) {
-                supportingFiles.add(new SupportingFile("homeController.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "HomeController.java"));
-                supportingFiles.add(new SupportingFile("swagger2SpringBoot.mustache",
-                        (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "Swagger2SpringBoot.java"));
-                supportingFiles.add(new SupportingFile("RFC3339DateFormat.mustache",
-                        (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "RFC3339DateFormat.java"));
-                supportingFiles.add(new SupportingFile("application.mustache",
-                        ("src.main.resources").replace(".", java.io.File.separator), "application.properties"));
-            }
-            if (library.equals(SPRING_MVC_LIBRARY)) {
-                supportingFiles.add(new SupportingFile("webApplication.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "WebApplication.java"));
-                supportingFiles.add(new SupportingFile("webMvcConfiguration.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "WebMvcConfiguration.java"));
-                supportingFiles.add(new SupportingFile("swaggerUiConfiguration.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerUiConfiguration.java"));
-                supportingFiles.add(new SupportingFile("RFC3339DateFormat.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "RFC3339DateFormat.java"));
-                supportingFiles.add(new SupportingFile("application.properties",
-                        ("src.main.resources").replace(".", java.io.File.separator), "swagger.properties"));
-            }
-            if (library.equals(SPRING_CLOUD_LIBRARY)) {
-                supportingFiles.add(new SupportingFile("apiKeyRequestInterceptor.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "ApiKeyRequestInterceptor.java"));
-                supportingFiles.add(new SupportingFile("clientConfiguration.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "ClientConfiguration.java"));
-                apiTemplateFiles.put("apiClient.mustache", "Client.java");
-                if (!additionalProperties.containsKey(SINGLE_CONTENT_TYPES)) {
-                    additionalProperties.put(SINGLE_CONTENT_TYPES, "true");
-                    this.setSingleContentTypes(true);
-                }
-            } else {
-                apiTemplateFiles.put("apiController.mustache", "Controller.java");
-                supportingFiles.add(new SupportingFile("apiException.mustache",
-                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiException.java"));
-                supportingFiles.add(new SupportingFile("apiResponseMessage.mustache",
-                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiResponseMessage.java"));
-                supportingFiles.add(new SupportingFile("notFoundException.mustache",
-                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "NotFoundException.java"));
-                supportingFiles.add(new SupportingFile("apiOriginFilter.mustache",
-                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiOriginFilter.java"));
-                supportingFiles.add(new SupportingFile("swaggerDocumentationConfig.mustache",
-                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerDocumentationConfig.java"));
-            }
+            apiTemplateFiles.put("apiClient.mustache", "Client.java");
+//            apiTemplateFiles.put("apiClientTest.mustache", "ClientTest.java");
+//            apiTemplateFiles.put("resource.mustache", "Resource.java");
+//            apiTemplateFiles.put("resourceTest.mustache", "ResourceTest.java");
+//            modelTestTemplateFiles.put("modelTest.mustache", ".java");
+
+//            if (library.equals(DEFAULT_LIBRARY)) {
+//                supportingFiles.add(new SupportingFile("homeController.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "HomeController.java"));
+//                supportingFiles.add(new SupportingFile("swagger2SpringBoot.mustache",
+//                        (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "Swagger2SpringBoot.java"));
+//                supportingFiles.add(new SupportingFile("RFC3339DateFormat.mustache",
+//                        (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "RFC3339DateFormat.java"));
+//                supportingFiles.add(new SupportingFile("application.mustache",
+//                        ("src.main.resources").replace(".", java.io.File.separator), "application.properties"));
+//            }
+//            if (library.equals(SPRING_MVC_LIBRARY)) {
+//                supportingFiles.add(new SupportingFile("webApplication.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "WebApplication.java"));
+//                supportingFiles.add(new SupportingFile("webMvcConfiguration.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "WebMvcConfiguration.java"));
+//                supportingFiles.add(new SupportingFile("swaggerUiConfiguration.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerUiConfiguration.java"));
+//                supportingFiles.add(new SupportingFile("RFC3339DateFormat.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "RFC3339DateFormat.java"));
+//                supportingFiles.add(new SupportingFile("application.properties",
+//                        ("src.main.resources").replace(".", java.io.File.separator), "swagger.properties"));
+//            }
+//            if (library.equals(SPRING_CLOUD_LIBRARY)) {
+//                supportingFiles.add(new SupportingFile("apiKeyRequestInterceptor.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "ApiKeyRequestInterceptor.java"));
+//                supportingFiles.add(new SupportingFile("clientConfiguration.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "ClientConfiguration.java"));
+//                apiTemplateFiles.put("apiClient.mustache", "Client.java");
+//                if (!additionalProperties.containsKey(SINGLE_CONTENT_TYPES)) {
+//                    additionalProperties.put(SINGLE_CONTENT_TYPES, "true");
+//                    this.setSingleContentTypes(true);
+//                }
+//            } else {
+//                apiTemplateFiles.put("apiController.mustache", "Controller.java");
+//                supportingFiles.add(new SupportingFile("apiException.mustache",
+//                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiException.java"));
+//                supportingFiles.add(new SupportingFile("apiResponseMessage.mustache",
+//                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiResponseMessage.java"));
+//                supportingFiles.add(new SupportingFile("notFoundException.mustache",
+//                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "NotFoundException.java"));
+//                supportingFiles.add(new SupportingFile("apiOriginFilter.mustache",
+//                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiOriginFilter.java"));
+//                supportingFiles.add(new SupportingFile("swaggerDocumentationConfig.mustache",
+//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerDocumentationConfig.java"));
+//            }
         } else if ( this.swaggerDocketConfig && !library.equals(SPRING_CLOUD_LIBRARY)) {
             supportingFiles.add(new SupportingFile("swaggerDocumentationConfig.mustache",
                     (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerDocumentationConfig.java"));
@@ -366,6 +386,7 @@ public class SpringCodegen extends AbstractJavaCodegen
             }
             opList.add(co);
             co.baseName = basePath;
+
         } else {
             super.addOperationToGroup(tag, resourcePath, operation, co, operations);
         }
@@ -554,7 +575,8 @@ public class SpringCodegen extends AbstractJavaCodegen
             return "DefaultApi";
         }
         name = sanitizeName(name);
-        return camelize(name) + "Api";
+//        return camelize(name) + "Api";
+        return camelize(name);
     }
 
     @Override

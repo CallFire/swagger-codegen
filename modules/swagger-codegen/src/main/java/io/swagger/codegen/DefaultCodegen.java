@@ -1,11 +1,23 @@
 package io.swagger.codegen;
 
-import javax.annotation.Nullable;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -2061,7 +2073,13 @@ public class DefaultCodegen {
         }
         operationId = removeNonNameElementToCamelCase(operationId);
         op.path = path;
+        op.resourcePath = "/" + path.split("/")[1] + "/";
+        op.methodPath = path.replace(op.resourcePath, "/");
+        op.methodPathUpper = DefaultCodegen
+                .underscore(op.methodPath.replace("/", "_").replace(".", "_").replaceAll("\\{", "").replaceAll("}", "")).toUpperCase();
         op.operationId = toOperationId(operationId);
+        op.operationIdCamelCase = DefaultCodegen.camelize(op.operationId);
+        op.operationIdUpper = DefaultCodegen.underscore(op.operationId).toUpperCase();
         op.summary = escapeText(operation.getSummary());
         op.unescapedNotes = operation.getDescription();
         op.notes = escapeText(operation.getDescription());
@@ -2331,6 +2349,10 @@ public class DefaultCodegen {
         op.isRestfulUpdate = op.isRestfulUpdate();
         op.isRestfulDestroy = op.isRestfulDestroy();
         op.isRestful = op.isRestful();
+        op.isPost = "POST".equals(op.httpMethod);
+        op.isPut = "PUT".equals(op.httpMethod);
+        op.isGet = "GET".equals(op.httpMethod);
+        op.isDelete = "DELETE".equals(op.httpMethod);
 
         // TODO: fix error with resolved yaml/json generators in order to enable this again.
         //configureDataForTestTemplate(op);

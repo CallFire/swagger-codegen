@@ -466,6 +466,7 @@ public class DefaultGenerator extends AbstractGenerator implements Generator {
                 operation.put("basePathWithoutHost", basePathWithoutHost);
                 operation.put("contextPath", contextPath);
                 operation.put("baseName", tag);
+                operation.put("baseNameUpper", DefaultCodegen.underscore(tag).toUpperCase());
                 operation.put("apiPackage", config.apiPackage());
                 operation.put("modelPackage", config.modelPackage());
                 operation.putAll(config.additionalProperties());

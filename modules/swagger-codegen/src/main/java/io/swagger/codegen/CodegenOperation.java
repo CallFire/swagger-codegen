@@ -1,14 +1,14 @@
 package io.swagger.codegen;
 
-import io.swagger.models.ExternalDocs;
-import io.swagger.models.Tag;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
+
+import io.swagger.models.ExternalDocs;
+import io.swagger.models.Tag;
 
 public class CodegenOperation {
     public final List<CodegenProperty> responseHeaders = new ArrayList<CodegenProperty>();
@@ -17,8 +17,9 @@ public class CodegenOperation {
             isListContainer, isMultipart, hasMore = true,
             isResponseBinary = false, isResponseFile = false, hasReference = false,
             isRestfulIndex, isRestfulShow, isRestfulCreate, isRestfulUpdate, isRestfulDestroy,
-            isRestful, isDeprecated;
-    public String path, testPath, operationId, returnType, httpMethod, returnBaseType,
+            isRestful, isDeprecated,
+            isPost, isPut, isGet, isDelete;
+    public String path, resourcePath, methodPath, methodPathUpper, testPath, operationId, returnType, httpMethod, returnBaseType,
             returnContainer, summary, unescapedNotes, notes, baseName, defaultResponse, discriminator;
     public List<Map<String, String>> consumes, produces, prioritizedContentTypes;
     public CodegenParameter bodyParam;
@@ -42,6 +43,7 @@ public class CodegenOperation {
     public String operationIdLowerCase; // for markdown documentation
     public String operationIdCamelCase; // for class names
     public String operationIdSnakeCase;
+    public String operationIdUpper;
 
     /**
      * Check if there's at least one parameter

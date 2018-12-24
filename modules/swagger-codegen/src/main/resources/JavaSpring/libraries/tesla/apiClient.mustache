@@ -1,0 +1,44 @@
+package {{package}};
+
+import static com.callfire.config.enums.AppType.API_TESLA;
+import static com.callfire.watson.common.api.client.AbstractApiClient.RequestMethod.*;
+import static com.callfire.watson.common.api.client.constants.RestApiDef.of;
+import static com.callfire.watson.common.api.client.model.RequestVariables.builderWith;
+
+import com.callfire.watson.common.api.client.AbstractApiClient;
+import com.callfire.api2.model.*;
+import com.callfire.api2.model.PageDto.*;
+import com.callfire.api2.model.ListDto.*;
+import com.callfire.api2.model.request.*;
+import com.callfire.watson.common.api.client.constants.RestApiDef;
+
+{{#operations}}
+public class {{classname}}Client extends AbstractApiClient {
+
+    public {{classname}}Client() {
+        super(API_TESLA);
+    }
+
+    public static final String {{baseNameUpper}}_RESOURCE_PATH = "/{{{baseName}}}";
+{{#operation}}
+    public static final String METHOD_PATH{{methodPathUpper}} = "{{{methodPath}}}";
+{{/operation}}
+
+{{#operation}}
+    static final RestApiDef<{{>returnTypes}}> {{operationIdUpper}} = of("Tesla{{operationIdCamelCase}}", {{httpMethod}}, {{baseNameUpper}}_RESOURCE_PATH, METHOD_PATH{{methodPathUpper}}, {{>returnTypes}}.class);
+{{/operation}}
+
+{{^jdk8}}
+{{#operation}}
+    public {{>returnTypes}} {{operationId}}({{#allParams}}{{dataType}} {{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
+        return execute(builderWith({{operationIdUpper}}){{#pathParams.0}}
+                .args(new Object[]{ {{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}} }){{/pathParams.0}}{{#queryParams.0}}
+                .params(new ParamMap(){{#queryParams}}.putNotNull("{{paramName}}", {{paramName}}){{/queryParams}}){{/queryParams.0}}{{#bodyParams.0}}
+                .dto({{#bodyParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/bodyParams}}){{/bodyParams.0}}
+                .build());
+    }
+
+{{/operation}}
+{{/jdk8}}
+}
+{{/operations}}
